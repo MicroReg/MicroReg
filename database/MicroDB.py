@@ -6,6 +6,9 @@ class MicroDB:
     with the database.
     The implementation is useful for managing small sets of data inside the memory
     without additional overhead of maintaining database files on the drive.
+
+    TODO: Implement crash recovery
+    TODO: Implement logging
     '''
 
     def __init__(self):
