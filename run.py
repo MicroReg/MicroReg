@@ -1,5 +1,4 @@
-from server.Server import Server
+from server.RegistryServer import RegistryServer
 
 if __name__ == '__main__':
-    s = Server('localhost', 8000, 1)
-    s.serve()
+    s = RegistryServer('localhost', 8000, 1)
