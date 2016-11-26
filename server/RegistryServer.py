@@ -15,7 +15,9 @@ class RegistryServer:
         self.__registry_server.register_handler(self.register, "register")
         self.__registry_server.register_handler(self.update_status, "update_status")
         self.__registry_server.register_handler(self.unregister, "unregister")
+        self.__registry_server.register_handler(self.get_all_service_details, "get_all_service_details")
         self.__registry_server.register_handler(self.get_service_details, "get_service_details")
+        self.__registry_server.register_handler(self.get_reg_count, "get_reg_count")
         self.__registry_server.serve()
 
     def register(self, service_name, service_host, service_port, service_status=ServiceDB.SERVICE_RUNNING):
@@ -42,6 +44,17 @@ class RegistryServer:
             return False
         service_id = self.__service_reg[service_name]
         return self.__service_db.get_service_location(service_id)
+
+    def get_all_service_details(self):
+        '''Returns the complete data of all the services'''
+
+        print "Service details call"
+        return self.__service_db.get_services()
+
+    def get_reg_count(self):
+        '''Return the number of registered services'''
+
+        return self.__service_db.get_registration_count()
 
     def unregister(self, service_name):
         ''' Unregister the service from the ServiceDB '''

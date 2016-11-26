@@ -30,7 +30,7 @@ class ServiceDB:
         service['host'] = service_host
         service['port'] = service_port
         service['status'] = service_status
-        service['reg_timestamp'] = datetime.datetime.now()
+        service['reg_timestamp'] = datetime.datetime.now().strftime("%d-%m-%y %H:%M")
         service['id'] = self.__service_id_reg
 
         #Insert into the database
@@ -83,6 +83,7 @@ class ServiceDB:
     def get_services(self):
         ''' Get information about all the registered services '''
 
+        print "call to get_services"
         return self.__db.get_records_json()
 
     def get_registration_count(self):
