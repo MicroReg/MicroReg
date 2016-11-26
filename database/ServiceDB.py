@@ -74,6 +74,7 @@ class ServiceDB:
 
         try:
             self.__db.remove(service_id)
+            print "Service unregistered"
             self.__num_registered_services -= 1
             return True
         except KeyError:
