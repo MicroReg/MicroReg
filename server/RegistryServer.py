@@ -1,5 +1,8 @@
 from Server import Server
 from database.ServiceDB import ServiceDB
+import socket
+import threading
+import time
 
 class RegistryServer:
     '''
@@ -10,6 +13,7 @@ class RegistryServer:
         ''' Initialize the RegistryServer '''
 
         self.__registry_server = Server(host, port, debug)
+        self.__socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.__service_db = ServiceDB()
         self.__service_reg = {}
         self.__registry_server.register_handler(self.register, "register")
@@ -18,11 +22,46 @@ class RegistryServer:
         self.__registry_server.register_handler(self.get_all_service_details, "get_all_service_details")
         self.__registry_server.register_handler(self.get_service_details, "get_service_details")
         self.__registry_server.register_handler(self.get_reg_count, "get_reg_count")
+        self.__cron_thread = threading.Thread(target=self.service_cron, args=(self,))
+        self.__cron_thread.daemon = True
+        self.__cron_thread.start()
         self.__registry_server.serve()
+
+    def service_cron(self, instance):
+        '''
+        Run a routine job to scan the registered service status and update it
+        whenever a change is detected.
+        '''
+
+        while True:
+            print instance.get_all_service_details()
+            try:
+                for key in instance.__service_reg:
+                    service = instance.get_service_details(key)
+                    service_id = instance.__service_reg[key]
+                    if instance.__service_db.get_service_status(service_id) == ServiceDB.SERVICE_ERROR:
+                        instance.unregister(key)
+                    __socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    try:
+                        __socket.connect((service[0].replace('http://', ''), service[1]))
+                        __socket.shutdown()
+                        __socket.close()
+                    except socket.error as e:
+                        instance.update_status(key, ServiceDB.SERVICE_ERROR)
+                    except TypeError:
+                        pass
+                    except RuntimeError:
+                        pass
+                    #instance.__socket.close()
+            except:
+                pass
+            time.sleep(5)
 
     def register(self, service_name, service_host, service_port, service_status=ServiceDB.SERVICE_RUNNING):
         ''' Register the service with the Database '''
 
+        if service_name in self.__service_reg:
+            return False
         resp = self.__service_db.register_service(service_name, service_host, service_port, service_status)
         if resp != False:
             self.__service_reg[service_name] = resp
@@ -62,6 +101,6 @@ class RegistryServer:
         if service_name not in self.__service_reg:
             return False
         service_id = self.__service_reg[service_name]
-        self.__service_reg[service_name]
+        del self.__service_reg[service_name]
         print self.__service_reg
         return self.__service_db.unregister_service(service_id)
