@@ -36,7 +36,8 @@ class RegistryServer:
         while True:
             print instance.get_all_service_details()
             try:
-                for key in instance.__service_reg:
+                service_reg = instance.__service_reg.copy()
+                for key in service_reg:
                     service = instance.get_service_details(key)
                     service_id = instance.__service_reg[key]
                     if instance.__service_db.get_service_status(service_id) == ServiceDB.SERVICE_ERROR:
@@ -50,9 +51,6 @@ class RegistryServer:
                         instance.update_status(key, ServiceDB.SERVICE_ERROR)
                     except TypeError:
                         pass
-                    except RuntimeError:
-                        pass
-                    #instance.__socket.close()
             except:
                 pass
             time.sleep(5)
