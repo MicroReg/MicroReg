@@ -1,5 +1,7 @@
 from Server import Server
 from database.ServiceDB import ServiceDB
+from crash_manager.CrashManager import CrashManager
+import os
 import socket
 import threading
 import time
@@ -22,9 +24,16 @@ class RegistryServer:
         self.__registry_server.register_handler(self.get_all_service_details, "get_all_service_details")
         self.__registry_server.register_handler(self.get_service_details, "get_service_details")
         self.__registry_server.register_handler(self.get_reg_count, "get_reg_count")
-        self.__cron_thread = threading.Thread(target=self.service_cron, args=(self,))
-        self.__cron_thread.daemon = True
-        self.__cron_thread.start()
+        #Service CRON
+        self.__service_cron_thread = threading.Thread(target=self.service_cron, args=(self,))
+        self.__service_cron_thread.daemon = True
+        self.__service_cron_thread.start()
+        #CrashManager CRON
+        microreg_data_dir = os.environ['MICROREG_DATA_DIR']
+        self.__crash_manager = CrashManager(self.__service_db, microreg_data_dir, self)
+        self.__cm_thread = threading.Thread(target=self.__crash_manager.backup_data)
+        self.__cm_thread.daemon = True
+        self.__cm_thread.start()
         self.__registry_server.serve()
 
     def service_cron(self, instance):
